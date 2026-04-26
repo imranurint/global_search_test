@@ -1,0 +1,15 @@
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "mieSEARCH"
+    DATABASE_URL: str = "postgresql://user:password@localhost:5432/mie_search_index_db"
+    RABBITMQ_HOST: str = "localhost"
+    RABBITMQ_QUEUE: str = "global_search_updates"
+    
+    JWT_SECRET: str = "your-secret-key"
+    ALGORITHM: str = "HS256"
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
