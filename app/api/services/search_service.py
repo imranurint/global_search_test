@@ -23,9 +23,14 @@ class SearchService:
     def execute_search(
         cls, db: Session, q: str, company_id: int, branch_ids: List[int]
     ) -> List[SearchResultResponse]:
+        # 1. Clean and format for prefix matching
+        # If user types "Jo", we want it to match "John"
+        # We join words with :* to enable prefix matching for each word
+        search_terms = " & ".join([f"{word}:*" for word in q.strip().split() if word])
+
         query = db.query(GlobalSearchIndex).filter(
             GlobalSearchIndex.company_id == company_id,
-            GlobalSearchIndex.search_vector.op("@@")(func.to_tsquery('english', f'{q}:*'))
+            GlobalSearchIndex.search_vector.op("@@")(func.to_tsquery('english', search_terms))
         )
         
         if branch_ids:
