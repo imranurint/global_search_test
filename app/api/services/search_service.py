@@ -28,10 +28,14 @@ class SearchService:
         # We join words with :* to enable prefix matching for each word
         search_terms = " & ".join([f"{word}:*" for word in q.strip().split() if word])
 
-        query = db.query(GlobalSearchIndex).filter(
+        # Senior Engineering approach: Rank-ordered results
+        # We rank by the ts_rank to ensure Title matches appear before Subtitle/Content matches.
+        rank = func.ts_rank(GlobalSearchIndex.search_vector, func.to_tsquery('english', search_terms)).label("rank")
+
+        query = db.query(GlobalSearchIndex, rank).filter(
             GlobalSearchIndex.company_id == company_id,
             GlobalSearchIndex.search_vector.op("@@")(func.to_tsquery('english', search_terms))
-        )
+        ).order_by(rank.desc())
         
         if branch_ids:
             query = query.filter(
@@ -42,7 +46,7 @@ class SearchService:
         results = query.limit(15).all()
         
         output = []
-        for r in results:
+        for r, score in results:
             cfg = cls._get_config(db, r.entity_type)
             output.append(SearchResultResponse(
                 id=r.id,

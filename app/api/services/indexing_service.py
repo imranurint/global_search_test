@@ -17,6 +17,10 @@ class IndexingService:
                 entity_id=payload.entity_id
             )
             db.add(record)
+        else:
+            # UPDATE the entity_type if it changed in the CRM
+            # e.g., from 'lead' to 'applicant'
+            record.entity_type = payload.entity_type
 
         record.title = payload.title
         record.subtitle = payload.subtitle
@@ -24,8 +28,16 @@ class IndexingService:
         record.company_id = payload.company_id
         record.allowed_branch_ids = payload.allowed_branch_ids
         
-        if payload.search_text:
-            record.search_vector = func.to_tsvector('english', payload.search_text)
+        # Senior Engineering approach: Weighted Full-Text Search
+        # Title (A) = 1.0 rank | Subtitle (B) = 0.4 rank | Search Text (C) = 0.2 rank
+        # This ensures a name match appears higher than a detail match.
+        record.search_vector = (
+            func.setweight(func.to_tsvector('english', payload.title or ''), 'A').op('||')(
+                func.setweight(func.to_tsvector('english', payload.subtitle or ''), 'B').op('||')(
+                    func.setweight(func.to_tsvector('english', payload.search_text or ''), 'C')
+                )
+            )
+        )
 
         db.commit()
 
