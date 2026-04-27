@@ -5,8 +5,8 @@ from app.db.base import Base
 import threading
 from app.workers.rabbitmq_listener import start_worker
 
-# Initialize DB tables
-Base.metadata.create_all(bind=engine)
+# Initialize DB tables - COMMENTED OUT FOR ALEMBIC
+# Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="mieSEARCH Service")
 
