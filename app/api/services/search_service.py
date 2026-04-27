@@ -62,8 +62,9 @@ class SearchService:
         # Filter: Match by company_id OR allow if it's a global entity type
         query = db.query(GlobalSearchIndex, rank).filter(
             (
-                (GlobalSearchIndex.company_id == company_id) | 
-                (GlobalSearchIndex.entity_type.in_(GLOBAL_ENTITIES))
+                (GlobalSearchIndex.company_ids.is_(None)) |             # Global (all companies)
+                (GlobalSearchIndex.company_ids.overlap([company_id])) | # Partially visible to this company
+                (GlobalSearchIndex.entity_type.in_(GLOBAL_ENTITIES))    # Explicit global types
             ),
             GlobalSearchIndex.search_vector.op("@@")(func.to_tsquery('english', search_terms))
         ).order_by(rank.desc())

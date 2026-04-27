@@ -9,5 +9,6 @@ class EventPayload(BaseModel):
     subtitle: Optional[str] = None
     status: Optional[str] = None
     company_id: Optional[int] = None
+    company_ids: Optional[List[int]] = None
     allowed_branch_ids: Optional[List[int]] = None
     search_text: Optional[str] = None

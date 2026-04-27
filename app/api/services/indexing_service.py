@@ -25,7 +25,15 @@ class IndexingService:
         record.title = payload.title
         record.subtitle = payload.subtitle
         record.status = payload.status
-        record.company_id = payload.company_id
+        
+        # Support both single and multiple company IDs for backward compatibility
+        if payload.company_ids:
+            record.company_ids = payload.company_ids
+        elif payload.company_id:
+            record.company_ids = [payload.company_id]
+        else:
+            record.company_ids = None
+
         record.allowed_branch_ids = payload.allowed_branch_ids
         
         # Senior Engineering approach: Weighted Full-Text Search
