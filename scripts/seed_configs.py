@@ -18,6 +18,7 @@ def seed_search_configs():
         {"entity_type": "university", "base_url_route": "/crm/universities/{id}", "icon_name": "AccountBalance", "display_priority": 4},
         {"entity_type": "course", "base_url_route": "/crm/courses/{id}", "icon_name": "MenuBook", "display_priority": 5},
         {"entity_type": "partner", "base_url_route": "/partners/list/{id}", "icon_name": "Handshake", "display_priority": 6},
+        {"entity_type": "user", "base_url_route": "/settings/users/{id}", "icon_name": "People", "display_priority": 9},
     ]
 
     try:

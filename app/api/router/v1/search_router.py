@@ -23,6 +23,17 @@ def search(
 
 
 # ==================== INDEXING ====================
+@router.get("/index/{entity_type}", response_model=List[SearchResultResponse])
+def list_indexed_data(
+    entity_type: str,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db)
+):
+    """List all indexed data for a specific entity type (for testing)"""
+    return SearchService.get_indexed_data_by_type(db, entity_type, limit, offset)
+
+
 @router.post("/index", status_code=status.HTTP_201_CREATED)
 def manual_index(payload: EventPayload, db: Session = Depends(get_db)):
     """Manually add/update an entity in the search index"""
