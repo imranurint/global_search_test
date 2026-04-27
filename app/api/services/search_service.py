@@ -48,16 +48,23 @@ class SearchService:
         cls, db: Session, q: str, company_id: int, branch_ids: List[int]
     ) -> List[SearchResultResponse]:
         # 1. Clean and format for prefix matching
-        # If user types "Jo", we want it to match "John"
-        # We join words with :* to enable prefix matching for each word
-        search_terms = " & ".join([f"{word}:*" for word in q.strip().split() if word])
+        # Use '|' (OR) for multi-word queries to allow broader matches, 
+        # while rank.desc() ensures best matches (matching all words) come first.
+        search_terms = " | ".join([f"{word}:*" for word in q.strip().split() if word])
 
         # Senior Engineering approach: Rank-ordered results
         # We rank by the ts_rank to ensure Title matches appear before Subtitle/Content matches.
         rank = func.ts_rank(GlobalSearchIndex.search_vector, func.to_tsquery('english', search_terms)).label("rank")
 
+        # Define entity types that are considered "Global" (visible to all companies)
+        GLOBAL_ENTITIES = ['university', 'course', 'partner']
+
+        # Filter: Match by company_id OR allow if it's a global entity type
         query = db.query(GlobalSearchIndex, rank).filter(
-            GlobalSearchIndex.company_id == company_id,
+            (
+                (GlobalSearchIndex.company_id == company_id) | 
+                (GlobalSearchIndex.entity_type.in_(GLOBAL_ENTITIES))
+            ),
             GlobalSearchIndex.search_vector.op("@@")(func.to_tsquery('english', search_terms))
         ).order_by(rank.desc())
         
@@ -67,7 +74,8 @@ class SearchService:
                 (GlobalSearchIndex.allowed_branch_ids.overlap(branch_ids))
             )
             
-        results = query.limit(15).all()
+        # Increase limit to 30 to see mixed results
+        results = query.limit(30).all()
         
         output = []
         for r, score in results:

@@ -14,8 +14,7 @@ class GlobalSearchIndex(Base):
     subtitle = Column(String(255))
     status = Column(String(100))
     
-    company_id = Column(Integer, nullable=False)
-    allowed_branch_ids = Column(ARRAY(Integer), nullable=True) 
+    company_ids = Column(ARRAY(Integer), nullable=True) 
     
     search_vector = Column(TSVECTOR)
     
