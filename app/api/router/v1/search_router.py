@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.db.database import get_db
-from app.services.search_service import SearchService
-from app.services.indexing_service import IndexingService
-from app.services.config_service import ConfigService
-from app.schemas.search_response import SearchResultResponse
-from app.schemas.event_payload import EventPayload
+from app.api.services.search_service import SearchService
+from app.api.services.indexing_service import IndexingService
+from app.api.services.config_service import ConfigService
+from app.api.schemas.search_response import SearchResultResponse
+from app.api.schemas.event_payload import EventPayload
 
 router = APIRouter()
 

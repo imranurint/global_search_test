@@ -3,7 +3,7 @@ from sqlalchemy import func
 from typing import List
 from app.models.search_index import GlobalSearchIndex
 from app.models.entity_config import SearchEntityConfig
-from app.schemas.search_response import SearchResultResponse
+from app.api.schemas.search_response import SearchResultResponse
 
 class SearchService:
     _route_cache = {}

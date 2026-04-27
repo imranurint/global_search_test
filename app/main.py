@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1 import api_v1_router
+from app.api.router.v1 import api_v1_router
 from app.db.database import engine
 from app.db.base import Base
 import threading

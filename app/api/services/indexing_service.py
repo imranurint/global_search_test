@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.models.search_index import GlobalSearchIndex
-from app.schemas.event_payload import EventPayload
+from app.api.schemas.event_payload import EventPayload
 
 class IndexingService:
     @staticmethod
