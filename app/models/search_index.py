@@ -23,6 +23,6 @@ class GlobalSearchIndex(Base):
 
     __table_args__ = (
         Index('idx_global_search_entity', 'entity_type', 'entity_id', unique=True),
-        Index('idx_global_search_company', 'company_id'),
+        Index('idx_global_search_company', 'company_ids', postgresql_using='gin'),
         Index('idx_global_search_vector', 'search_vector', postgresql_using='gin'),
     )
