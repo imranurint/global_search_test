@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from typing import List
+from typing import List, Dict
 from app.models.search_index import GlobalSearchIndex
 from app.models.entity_config import SearchEntityConfig
 from app.api.schemas.search_response import SearchResultResponse
+from app.api.schemas.sectioned_response import SectionedSearchResponse
 
 class SearchService:
     _route_cache = {}
@@ -46,7 +47,7 @@ class SearchService:
     @classmethod
     def execute_search(
         cls, db: Session, q: str, company_id: int, branch_ids: List[int]
-    ) -> List[SearchResultResponse]:
+    ) -> SectionedSearchResponse:
         # 1. Clean and format for prefix matching
         # Use '|' (OR) for multi-word queries to allow broader matches, 
         # while rank.desc() ensures best matches (matching all words) come first.
@@ -60,28 +61,32 @@ class SearchService:
         GLOBAL_ENTITIES = ['university', 'course', 'partner']
 
         # Filter: Match by company_id OR allow if it's a global entity type
+        # For Global Entities (University/Course), we IGNORE the company_id filter entirely.
         query = db.query(GlobalSearchIndex, rank).filter(
             (
-                (GlobalSearchIndex.company_ids.is_(None)) |             # Global (all companies)
-                (GlobalSearchIndex.company_ids.overlap([company_id])) | # Partially visible to this company
-                (GlobalSearchIndex.entity_type.in_(GLOBAL_ENTITIES))    # Explicit global types
+                (GlobalSearchIndex.entity_type.in_(GLOBAL_ENTITIES)) |  # Case 1: Is a Global Entity Type
+                (GlobalSearchIndex.company_ids.is_(None)) |             # Case 2: Explicitly Global Record (NULL)
+                (GlobalSearchIndex.company_ids.overlap([company_id]))    # Case 3: Private but matches company
             ),
             GlobalSearchIndex.search_vector.op("@@")(func.to_tsquery('english', search_terms))
-        ).order_by(rank.desc())
+        )
         
+        # Branch filter only applies to non-global entities or if record has branches
         if branch_ids:
             query = query.filter(
+                (GlobalSearchIndex.entity_type.in_(GLOBAL_ENTITIES)) |
                 (GlobalSearchIndex.allowed_branch_ids.is_(None)) |
                 (GlobalSearchIndex.allowed_branch_ids.overlap(branch_ids))
             )
             
-        # Increase limit to 30 to see mixed results
-        results = query.limit(30).all()
+        results = query.order_by(rank.desc()).limit(100).all()
         
-        output = []
+        sections = {}
+        total = len(results)
+
         for r, score in results:
             cfg = cls._get_config(db, r.entity_type)
-            output.append(SearchResultResponse(
+            item = SearchResultResponse(
                 id=r.id,
                 entity_type=r.entity_type,
                 entity_id=r.entity_id,
@@ -90,5 +95,15 @@ class SearchService:
                 status=r.status,
                 routing_url=cfg["route"].format(id=r.entity_id),
                 icon_name=cfg["icon"]
-            ))
-        return output
+            )
+            
+            # Group by entity_type (section names: lead, user, applicant, etc.)
+            section_name = r.entity_type.capitalize()
+            if section_name not in sections:
+                sections[section_name] = []
+            sections[section_name].append(item)
+
+        return SectionedSearchResponse(
+            total_count=total,
+            sections=sections
+        )

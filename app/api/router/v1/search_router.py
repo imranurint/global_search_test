@@ -6,12 +6,13 @@ from app.api.services.search_service import SearchService
 from app.api.services.indexing_service import IndexingService
 from app.api.services.config_service import ConfigService
 from app.api.schemas.search_response import SearchResultResponse
+from app.api.schemas.sectioned_response import SectionedSearchResponse
 from app.api.schemas.event_payload import EventPayload
 
 router = APIRouter()
 
 # ==================== SEARCH ====================
-@router.get("/search", response_model=List[SearchResultResponse])
+@router.get("/search", response_model=SectionedSearchResponse)
 def search(
     q: str = Query(..., min_length=2),
     company_id: int = Query(...),

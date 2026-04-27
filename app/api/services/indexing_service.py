@@ -26,12 +26,13 @@ class IndexingService:
         record.subtitle = payload.subtitle
         record.status = payload.status
         
-        # Support both single and multiple company IDs for backward compatibility
+        # Security logic in IndexingService
         if payload.company_ids:
             record.company_ids = payload.company_ids
         elif payload.company_id:
             record.company_ids = [payload.company_id]
         else:
+            # Entities with no company become "Global"
             record.company_ids = None
 
         record.allowed_branch_ids = payload.allowed_branch_ids
