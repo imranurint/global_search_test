@@ -29,7 +29,7 @@ if __name__ == "__main__":
         "title": "John Doe",
         "subtitle": "Software Inquiry",
         "status": "In Progress",
-        "company_id": 1,
+        "company_ids": [1],
         "allowed_branch_ids": [10, 20],
         "search_text": "John Doe software developer interested in python"
     }
