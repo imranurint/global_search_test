@@ -68,27 +68,39 @@ class ElasticSearchService:
             size=100
         )
 
-        # 4. Format the Response into Sections (Grouping by Type)
+        # --- EXPLANATION START ---
+        # 1. We fetch all icons/routes from our Config Index (Replacing PostgreSQL Table)
+        # Result looks like: {"lead": {"icon_name": "person", "base_url_route": "/crm/leads/{id}"}, ...}
+        from app.api.services.config_service import ConfigService
+        all_configs = {c['entity_type']: c for c in ConfigService.get_all_configs()}
+        
         sections = {}
         total = response['hits']['total']['value']
 
         for hit in response['hits']['hits']:
             source = hit['_source']
-            entity_type = source['entity_type']
+            etype = source['entity_type']
             
+            # 2. We look up the settings for THIS entity type (e.g., 'lead')
+            # If we don't find it in our configs, we use a 'bolt' icon as fallback.
+            cfg = all_configs.get(etype, {"base_url_route": "/dashboard/{id}", "icon_name": "bolt"})
+            
+            # 3. We create the response object using the correct Icon and URL from our configs
             item = SearchResultResponse(
                 id=hit['_id'],
-                entity_type=entity_type,
+                entity_type=etype,
                 entity_id=source['entity_id'],
                 title=source['title'],
                 subtitle=source['subtitle'],
                 status=source['status'],
-                # Dynamic routing based on entity type
-                routing_url=f"/dashboard/{entity_type}/{source['entity_id']}",
-                icon_name="default"
+                # We replace {id} in the route string with the actual ID (e.g., /crm/leads/55)
+                routing_url=cfg["base_url_route"].format(id=source['entity_id']),
+                icon_name=cfg["icon_name"]
             )
+            # --- EXPLANATION END ---
 
-            section_name = entity_type.capitalize()
+            # Group into sections (Lead, Applicant, etc.)
+            section_name = etype.capitalize()
             if section_name not in sections:
                 sections[section_name] = []
             sections[section_name].append(item)
