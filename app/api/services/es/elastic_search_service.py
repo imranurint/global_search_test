@@ -71,7 +71,7 @@ class ElasticSearchService:
         # --- EXPLANATION START ---
         # 1. We fetch all icons/routes from our Config Index (Replacing PostgreSQL Table)
         # Result looks like: {"lead": {"icon_name": "person", "base_url_route": "/crm/leads/{id}"}, ...}
-        from app.api.services.config_service import ConfigService
+        from mieSEARCH.app.api.services.pg.config_service import ConfigService
         all_configs = {c['entity_type']: c for c in ConfigService.get_all_configs()}
         
         sections = {}
