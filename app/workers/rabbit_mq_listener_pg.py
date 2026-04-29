@@ -1,7 +1,7 @@
 import json
 import pika
 from app.db.database import SessionLocal
-from app.api.services.es.elastic_indexing_service import ElasticIndexingService as IndexingService
+from app.api.services.pg.indexing_service import IndexingService
 from app.api.schemas.event_payload import EventPayload
 from app.core.config import settings
 
@@ -20,10 +20,9 @@ def start_worker():
                 payload = EventPayload(**data)
                 
                 if payload.event_action == "DELETE":
-                    IndexingService.delete_entity(payload.entity_type, payload.entity_id)
-
+                    IndexingService.delete_entity(db, payload.entity_type, payload.entity_id)
                 else:
-                    IndexingService.upsert_entity(payload)
+                    IndexingService.upsert_entity(db, payload)
                     
                 ch.basic_ack(delivery_tag=method.delivery_tag)
             except Exception as e:
