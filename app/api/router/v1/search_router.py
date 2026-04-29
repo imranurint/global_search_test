@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.db.database import get_db
-from mieSEARCH.app.api.services.pg.search_service import SearchService
-from mieSEARCH.app.api.services.pg.indexing_service import IndexingService
-from mieSEARCH.app.api.services.pg.config_service import ConfigService
+from app.api.services.pg.search_service import SearchService
+from app.api.services.pg.indexing_service import IndexingService
+from app.api.services.pg.config_service import ConfigService
 from app.api.schemas.search_response import SearchResultResponse
 from app.api.schemas.sectioned_response import SectionedSearchResponse
 from app.api.schemas.event_payload import EventPayload

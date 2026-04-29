@@ -1,7 +1,7 @@
 import json
 import pika
 from app.db.database import SessionLocal
-from mieSEARCH.app.api.services.pg.indexing_service import IndexingService
+from app.api.services.pg.indexing_service import IndexingService
 from app.api.schemas.event_payload import EventPayload
 from app.core.config import settings
 
