@@ -6,4 +6,4 @@ pydantic>=2.6.0
 pydantic-settings>=2.1.0  # For loading environment variables
 pika>=1.3.2               # RabbitMQ client
 alembic>=1.13.1           # For database migrations
-elasticsearch>=8.0.0
+elasticsearch>=8.0.0,<9.0.0
