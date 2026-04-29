@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     
     JWT_SECRET: str = "your-secret-key"
     ALGORITHM: str = "HS256"
+    ELASTICSEARCH_URL: str = "http://localhost:9200"
+    INDEX_NAME: str = "unified_search"
 
     class Config:
         env_file = ".env"
