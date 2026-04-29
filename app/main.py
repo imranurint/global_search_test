@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 import threading
 from app.workers.rabbitmq_listener import start_worker
 
-from app.api.router.v1.search_router import router as search_router
+from app.api.router.v1 import api_v1_router as search_router
 
 # 1. Define the Lifespan (This handles both Startup and Shutdown)
 @asynccontextmanager

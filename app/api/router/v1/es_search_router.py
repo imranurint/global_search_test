@@ -12,7 +12,7 @@ from app.api.schemas.event_payload import EventPayload
 router = APIRouter()
 
 # ==================== SEARCH (Elasticsearch Powered) ====================
-@router.get("/es/search", response_model=SectionedSearchResponse)
+@router.get("/search", response_model=SectionedSearchResponse)
 def search(
     q: str = Query(..., min_length=2),
     company_id: int = Query(...),
