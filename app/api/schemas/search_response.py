@@ -1,9 +1,10 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
 
 class SearchResultResponse(BaseModel):
-    id: UUID
+    # Change from UUID to str to support Elasticsearch IDs
+    id: Union[str, UUID] 
     entity_type: str
     entity_id: str
     title: str
