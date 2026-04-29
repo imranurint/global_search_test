@@ -15,9 +15,9 @@ class EventPayload(BaseModel):
     
     # Unified company handling
     company_id: Optional[int] = None
-    company_ids: List[int] = Field(default_factory=list)
+    company_ids: Optional[List[int]] = Field(default_factory=list)
+    allowed_branch_ids: Optional[List[int]] = Field(default_factory=list)
     
-    allowed_branch_ids: List[int] = Field(default_factory=list)
     search_text: Optional[str] = ""
     
     # Critical for 3M records management
