@@ -2,15 +2,15 @@ import json
 import redis
 import time
 from app.db.database import SessionLocal
-from mieSEARCH.app.api.services.pg.indexing_service import IndexingService
+from app.api.services.pg.indexing_service import IndexingService
 from app.api.schemas.event_payload import EventPayload
 from app.core.config import settings
 
 def start_redis_worker():
     # 1. Connection setup
     r = redis.Redis(
-        host=settings.REDIS_HOST, 
-        port=settings.REDIS_PORT, 
+        host=settings.REDIS_HOST,
+        port=settings.REDIS_PORT,
         decode_responses=True
     )
     
