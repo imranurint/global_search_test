@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from app.db.database import get_db
 from app.api.services.pg.search_service import SearchService
 from app.api.services.pg.indexing_service import IndexingService
@@ -17,10 +17,19 @@ def search(
     q: str = Query(..., min_length=2),
     company_id: int = Query(...),
     branch_ids: List[int] = Query(default=[]),
+    entity_types: Optional[List[str]] = Query(default=None), # New filter
+    page: int = Query(1, ge=1),                             # New pagination
+    page_size: int = Query(20, ge=1, le=100),               # New pagination
     db: Session = Depends(get_db)
 ):
     """Global search across all entities"""
-    return SearchService.execute_search(db, q, company_id, branch_ids)
+    offset = (page - 1) * page_size
+    return SearchService.execute_search(
+        db, q, company_id, branch_ids, 
+        entity_types=entity_types, 
+        limit=page_size, 
+        offset=offset
+    )
 
 
 # ==================== INDEXING ====================

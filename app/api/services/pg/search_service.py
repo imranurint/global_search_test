@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from typing import List, Dict
+from typing import List, Dict, Optional
 from app.models.search_index import GlobalSearchIndex
 from app.models.entity_config import SearchEntityConfig
 from app.api.schemas.search_response import SearchResultResponse
@@ -46,7 +46,10 @@ class SearchService:
 
     @classmethod
     def execute_search(
-        cls, db: Session, q: str, company_id: int, branch_ids: List[int]
+        cls, db: Session, q: str, company_id: int, branch_ids: List[int],
+        entity_types: Optional[List[str]] = None,
+        limit: int = 20,
+        offset: int = 0
     ) -> SectionedSearchResponse:
         # 1. Clean and format for prefix matching
         # Use '|' (OR) for multi-word queries to allow broader matches, 
@@ -79,11 +82,17 @@ class SearchService:
                 (GlobalSearchIndex.allowed_branch_ids.overlap(branch_ids))
             )
             
-        results = query.order_by(rank.desc()).limit(100).all()
+        # Filter by specific entity types (e.g., ['lead', 'user'])
+        if entity_types:
+            query = query.filter(GlobalSearchIndex.entity_type.in_(entity_types))
+
+        # Get total count before slicing for pagination
+        total_count = query.count()
+        
+        # Apply pagination
+        results = query.order_by(rank.desc()).offset(offset).limit(limit).all()
         
         sections = {}
-        total = len(results)
-
         for r, score in results:
             cfg = cls._get_config(db, r.entity_type)
             item = SearchResultResponse(
@@ -104,6 +113,6 @@ class SearchService:
             sections[section_name].append(item)
 
         return SectionedSearchResponse(
-            total_count=total,
+            total_count=total_count,
             sections=sections
         )
