@@ -13,7 +13,10 @@ class ElasticSearchService:
         cls, 
         q: str, 
         company_id: int, 
-        branch_ids: Optional[List[int]] = None
+        branch_ids: Optional[List[int]] = None,
+        entity_types: Optional[List[str]] = None,
+        size: int = 20,
+        from_: int = 0
     ) -> SectionedSearchResponse:
         """
         Executes a high-efficiency fuzzy search across 3M records in Elasticsearch.
@@ -50,6 +53,10 @@ class ElasticSearchService:
             }
         }
 
+        # Add Entity Type Filter
+        if entity_types:
+            query["bool"]["filter"].append({"terms": {"entity_type": entity_types}})
+
         # 2. Apply Branch-level security if branch_ids are provided
         if branch_ids:
             query["bool"]["filter"].append({
@@ -61,11 +68,12 @@ class ElasticSearchService:
                 }
             })
 
-        # 3. Execute Search
+        # 3. Execute Search with from/size for pagination
         response = es.search(
             index=settings.ELASTICSEARCH_INDEX,
             query=query,
-            size=100
+            from_=from_,  # Starting point
+            size=size    # Number of results
         )
 
         # --- EXPLANATION START ---

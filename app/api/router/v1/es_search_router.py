@@ -16,11 +16,20 @@ router = APIRouter()
 def search(
     q: str = Query(..., min_length=2),
     company_id: int = Query(...),
-    branch_ids: Optional[List[int]] = Query(default=None)
+    branch_ids: Optional[List[int]] = Query(default=None),
+    entity_types: Optional[List[str]] = Query(default=None), # New filter
+    page: int = Query(1, ge=1),                             # New pagination
+    page_size: int = Query(20, ge=1, le=100)                # New pagination
 ):
     """Global fuzzy search across 3M+ entities in Elasticsearch"""
+    offset = (page - 1) * page_size
     # Notice: No 'db' dependency here anymore!
-    return ElasticSearchService.execute_search(q, company_id, branch_ids)
+    return ElasticSearchService.execute_search(
+        q, company_id, branch_ids, 
+        entity_types=entity_types, 
+        size=page_size, 
+        from_=offset
+    )
 
 
 # ==================== INDEXING (Elasticsearch Powered) ====================
